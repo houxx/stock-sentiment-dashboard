@@ -92,6 +92,8 @@
             box-shadow: var(--card-shadow);
             padding: 15px;
             text-align: center;
+            display: flex;
+            flex-direction: column;
         }
 
         .stat-card h3 {
@@ -111,6 +113,13 @@
             display: flex;
             align-items: center;
             justify-content: center;
+            margin-bottom: 10px;
+        }
+        
+        .stat-card .mini-chart {
+            height: 60px;
+            margin-top: auto;
+            padding: 5px 0;
         }
 
         .trend-up {
@@ -307,16 +316,25 @@
                     <h3>乐观指标</h3>
                     <div class="value" id="optimisticValue">0</div>
                     <div class="trend" id="optimisticTrend">趋势: --</div>
+                    <div class="mini-chart">
+                        <canvas id="optimisticChart"></canvas>
+                    </div>
                 </div>
                 <div class="stat-card">
                     <h3>中性指标</h3>
                     <div class="value" id="neutralValue">0</div>
                     <div class="trend" id="neutralTrend">趋势: --</div>
+                    <div class="mini-chart">
+                        <canvas id="neutralChart"></canvas>
+                    </div>
                 </div>
                 <div class="stat-card">
                     <h3>悲观指标</h3>
                     <div class="value" id="pessimisticValue">0</div>
                     <div class="trend" id="pessimisticTrend">趋势: --</div>
+                    <div class="mini-chart">
+                        <canvas id="pessimisticChart"></canvas>
+                    </div>
                 </div>
             </div>
         </div>
@@ -868,6 +886,84 @@
             }
         }
 
+        // 创建小折线图
+        function createMiniChart(canvasId, data, type, color) {
+            const canvas = document.getElementById(canvasId);
+            if (!canvas) {
+                console.error(`找不到canvas元素: ${canvasId}`);
+                return;
+            }
+            
+            // 获取最近5天的数据
+            const recentData = data.slice(-5);
+            const labels = recentData.map(item => {
+                const date = new Date(item.date);
+                return `${date.getMonth() + 1}/${date.getDate()}`;
+            });
+            const values = recentData.map(item => item[type] || 0);
+            
+            const ctx = canvas.getContext('2d');
+            
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        data: values,
+                        borderColor: color,
+                        backgroundColor: color + '20',
+                        borderWidth: 2,
+                        fill: true,
+                        tension: 0.4,
+                        pointRadius: 3,
+                        pointBackgroundColor: color,
+                        pointBorderColor: '#fff',
+                        pointBorderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            enabled: true,
+                            mode: 'index',
+                            intersect: false,
+                            callbacks: {
+                                title: function(tooltipItems) {
+                                    return tooltipItems[0].label;
+                                },
+                                label: function(tooltipItem) {
+                                    return `${type}: ${tooltipItem.formattedValue}`;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            display: false
+                        },
+                        y: {
+                            display: false,
+                            beginAtZero: true
+                        }
+                    },
+                    elements: {
+                        point: {
+                            hoverRadius: 4
+                        }
+                    },
+                    animation: {
+                        duration: 800,
+                        easing: 'easeInOutQuart'
+                    }
+                }
+            });
+        }
+
         // 统一的迷你图绘制函数 (使用Chart.js和Annotations插件)
         function getThresholdsForIndicator(indicatorName) {
             if (indicatorName === 'VIX 指数 (恐慌指数)') {
@@ -1395,6 +1491,11 @@
                     updateTrendDisplay('optimisticTrend', optimisticTrend);
                     updateTrendDisplay('neutralTrend', neutralTrend);
                     updateTrendDisplay('pessimisticTrend', pessimisticTrend);
+                    
+                    // 创建小折线图
+                    createMiniChart('optimisticChart', sentimentData.overall_sentiment_distribution, 'optimistic', '#27ae60');
+                    createMiniChart('neutralChart', sentimentData.overall_sentiment_distribution, 'neutral', '#f39c12');
+                    createMiniChart('pessimisticChart', sentimentData.overall_sentiment_distribution, 'pessimistic', '#e74c3c');
                 } else {
                     console.warn('情绪数据为空或无效，创建测试图表');
                     // 创建测试图表

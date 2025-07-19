@@ -71,12 +71,49 @@ https://houxx.github.io/stock-sentiment-dashboard/integrated_dashboard.html
 
 ## 📈 数据更新
 
+### 更新数据流程
+
+1. **更新主数据文件**
+   ```bash
+   # 直接编辑或替换主数据文件
+   vim enhanced_processed_sentiment_data.csv
+   ```
+   
+   数据格式说明：
+   - 列1: 日期 (YYYY-MM-DD)
+   - 列2: 指标名称
+   - 列3: 判断结果 (乐观/中性/悲观)
+   - 列4: 情绪得分 (1.0/0.0/-1.0)
+   - 列5: 数值数据
+   - 列6: 判断标准
+   - 列7: 当前状态解读
+
+2. **生成JSON配置文件**
+   ```bash
+   python3 generate_json_from_csv.py
+   ```
+
+3. **提交更新**
+   ```bash
+   git add .
+   git commit -m "Update sentiment data - YYYY-MM-DD"
+   git push origin main
+   ```
+
+4. **自动部署**
+   - GitHub Actions会自动检测更新并重新部署
+   - 等待1-2分钟后访问线上页面查看更新
+
+### 数据处理脚本
+
 项目包含多个Python脚本用于数据处理和更新：
 
+- `generate_json_from_csv.py` - 从CSV生成JSON配置文件
 - `process_sentiment_data.py` - 处理原始情绪数据
 - `enhance_processed_data.py` - 增强数据处理
-- `generate_sentiment_json.py` - 生成JSON配置文件
 - `merge_csv_data.py` - 合并CSV数据文件
+- `check_csv.py` - 检查CSV数据格式
+- `fix_data_format.py` - 修复数据格式问题
 
 ## 🎨 界面特色
 

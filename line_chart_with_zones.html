@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>带色块背景的折线图</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            padding: 30px;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .header h1 {
+            color: #2c3e50;
+            margin-bottom: 10px;
+            font-size: 2em;
+        }
+        .header p {
+            color: #7f8c8d;
+            font-size: 1.1em;
+        }
+        .chart-container {
+            position: relative;
+            height: 400px;
+            margin: 20px 0;
+        }
+        canvas {
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .legend {
+            display: flex;
+            justify-content: center;
+            margin: 20px 0;
+            flex-wrap: wrap;
+        }
+        .legend-item {
+            display: flex;
+            align-items: center;
+            margin: 0 15px;
+        }
+        .legend-color {
+            width: 20px;
+            height: 20px;
+            border-radius: 3px;
+            margin-right: 8px;
+        }
+        .optimistic { background-color: rgba(39, 174, 96, 0.3); }
+        .neutral { background-color: rgba(243, 156, 18, 0.3); }
+        .pessimistic { background-color: rgba(231, 76, 60, 0.3); }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📈 带色块背景的情绪折线图</h1>
+            <p>根据情绪阈值显示不同背景色的折线图</p>
+        </div>
+        
+        <div class="legend">
+            <div class="legend-item">
+                <div class="legend-color optimistic"></div>
+                <span>乐观区域 (0-20)</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color neutral"></div>
+                <span>中性区域 (20-25)</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color pessimistic"></div>
+                <span>悲观区域 (25-100)</span>
+            </div>
+        </div>
+        
+        <div class="chart-container">
+            <canvas id="lineChart"></canvas>
+        </div>
+    </div>
+
+    <script>
+        // 模拟数据 - 日期和值
+        const data = [
+            { date: '2025-07-01', value: 15 },
+            { date: '2025-07-02', value: 18 },
+            { date: '2025-07-03', value: 22 },
+            { date: '2025-07-04', value: 24 },
+            { date: '2025-07-05', value: 28 },
+            { date: '2025-07-06', value: 26 },
+            { date: '2025-07-07', value: 23 },
+            { date: '2025-07-08', value: 19 },
+            { date: '2025-07-09', value: 16 },
+            { date: '2025-07-10', value: 14 },
+            { date: '2025-07-11', value: 17 },
+            { date: '2025-07-12', value: 21 },
+            { date: '2025-07-13', value: 25 },
+            { date: '2025-07-14', value: 27 }
+        ];
+
+        // 情绪阈值定义
+        const sentimentThresholds = {
+            'optimistic': [0, 20],
+            'neutral': [20, 25],
+            'pessimistic': [25, 100]
+        };
+
+        // 情绪对应的颜色
+        const sentimentColors = {
+            'optimistic': 'rgba(39, 174, 96, 0.3)',
+            'neutral': 'rgba(243, 156, 18, 0.3)',
+            'pessimistic': 'rgba(231, 76, 60, 0.3)'
+        };
+
+        /**
+         * 绘制带色块背景的折线图
+         * @param {string} canvasId - Canvas元素的ID
+         * @param {Array} data - 数据点数组，每个数据点包含date和value
+         * @param {Object} thresholds - 情绪阈值对象
+         * @param {Object} colors - 情绪颜色对象
+         * @param {Object} options - 图表选项
+         */
+        function drawLineChartWithZones(canvasId, data, thresholds, colors, options = {}) {
+            // 获取Canvas元素和上下文
+            const canvas = document.getElementById(canvasId);
+            const ctx = canvas.getContext('2d');
+            
+            // 设置Canvas尺寸
+            const width = options.width || canvas.parentElement.clientWidth;
+            const height = options.height || 400;
+            canvas.width = width;
+            canvas.height = height;
+            
+            // 设置边距
+            const margin = options.margin || { top: 40, right: 30, bottom: 50, left: 60 };
+            const chartWidth = width - margin.left - margin.right;
+            const chartHeight = height - margin.top - margin.bottom;
+            
+            // 计算数据范围
+            const xValues = data.map(d => new Date(d.date));
+            const yValues = data.map(d => d.value);
+            const minY = options.minY !== undefined ? options.minY : Math.min(...yValues);
+            const maxY = options.maxY !== undefined ? options.maxY : Math.max(...yValues);
+            const yRange = maxY - minY;
+            
+            // 为了更好的视觉效果，扩展Y轴范围
+            const paddedMinY = Math.max(0, minY - yRange * 0.1);
+            const paddedMaxY = maxY + yRange * 0.1;
+            
+            // 坐标转换函数
+            const xScale = (date) => {
+                const minDate = xValues[0];
+                const maxDate = xValues[xValues.length - 1];
+                const range = maxDate - minDate;
+                return margin.left + ((date - minDate) / range) * chartWidth;
+            };
+            
+            const yScale = (value) => {
+                return height - margin.bottom - ((value - paddedMinY) / (paddedMaxY - paddedMinY)) * chartHeight;
+            };
+            
+            // 清除画布
+            ctx.clearRect(0, 0, width, height);
+            
+            // 绘制背景色块
+            Object.entries(thresholds).forEach(([sentiment, [min, max]]) => {
+                const color = colors[sentiment];
+                const y1 = yScale(Math.max(min, paddedMinY));
+                const y2 = yScale(Math.min(max, paddedMaxY));
+                
+                ctx.fillStyle = color;
+                ctx.fillRect(margin.left, y2, chartWidth, y1 - y2);
+            });
+            
+            // 绘制坐标轴
+            ctx.strokeStyle = '#666';
+            ctx.lineWidth = 1;
+            
+            // X轴
+            ctx.beginPath();
+            ctx.moveTo(margin.left, height - margin.bottom);
+            ctx.lineTo(width - margin.right, height - margin.bottom);
+            ctx.stroke();
+            
+            // Y轴
+            ctx.beginPath();
+            ctx.moveTo(margin.left, margin.top);
+            ctx.lineTo(margin.left, height - margin.bottom);
+            ctx.stroke();
+            
+            // 绘制X轴刻度和标签
+            const xTickCount = Math.min(data.length, 7); // 最多显示7个刻度
+            const xTickInterval = Math.ceil(data.length / xTickCount);
+            
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'top';
+            ctx.fillStyle = '#666';
+            ctx.font = '12px Arial';
+            
+            for (let i = 0; i < data.length; i += xTickInterval) {
+                const x = xScale(new Date(data[i].date));
+                const date = new Date(data[i].date);
+                const label = `${date.getMonth() + 1}/${date.getDate()}`;
+                
+                // 刻度线
+                ctx.beginPath();
+                ctx.moveTo(x, height - margin.bottom);
+                ctx.lineTo(x, height - margin.bottom + 5);
+                ctx.stroke();
+                
+                // 标签
+                ctx.fillText(label, x, height - margin.bottom + 10);
+            }
+            
+            // 绘制Y轴刻度和标签
+            const yTickCount = 5;
+            const yTickInterval = (paddedMaxY - paddedMinY) / yTickCount;
+            
+            ctx.textAlign = 'right';
+            ctx.textBaseline = 'middle';
+            
+            for (let i = 0; i <= yTickCount; i++) {
+                const value = paddedMinY + i * yTickInterval;
+                const y = yScale(value);
+                
+                // 刻度线
+                ctx.beginPath();
+                ctx.moveTo(margin.left, y);
+                ctx.lineTo(margin.left - 5, y);
+                ctx.stroke();
+                
+                // 标签
+                ctx.fillText(value.toFixed(1), margin.left - 10, y);
+                
+                // 网格线（可选）
+                if (options.showGrid) {
+                    ctx.strokeStyle = '#eee';
+                    ctx.beginPath();
+                    ctx.moveTo(margin.left, y);
+                    ctx.lineTo(width - margin.right, y);
+                    ctx.stroke();
+                    ctx.strokeStyle = '#666';
+                }
+            }
+            
+            // 绘制折线
+            ctx.strokeStyle = 'white';
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            
+            data.forEach((d, i) => {
+                const x = xScale(new Date(d.date));
+                const y = yScale(d.value);
+                
+                if (i === 0) {
+                    ctx.moveTo(x, y);
+                } else {
+                    ctx.lineTo(x, y);
+                }
+            });
+            
+            ctx.stroke();
+            
+            // 绘制数据点
+            ctx.fillStyle = 'white';
+            ctx.strokeStyle = '#333';
+            ctx.lineWidth = 2;
+            
+            data.forEach(d => {
+                const x = xScale(new Date(d.date));
+                const y = yScale(d.value);
+                
+                ctx.beginPath();
+                ctx.arc(x, y, 5, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.stroke();
+            });
+            
+            // 绘制标题（如果提供）
+            if (options.title) {
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'top';
+                ctx.fillStyle = '#333';
+                ctx.font = 'bold 16px Arial';
+                ctx.fillText(options.title, width / 2, 10);
+            }
+            
+            // 绘制Y轴标题
+            if (options.yAxisLabel) {
+                ctx.save();
+                ctx.translate(15, height / 2);
+                ctx.rotate(-Math.PI / 2);
+                ctx.textAlign = 'center';
+                ctx.fillStyle = '#666';
+                ctx.font = '14px Arial';
+                ctx.fillText(options.yAxisLabel, 0, 0);
+                ctx.restore();
+            }
+        }
+
+        // 页面加载完成后初始化图表
+        document.addEventListener('DOMContentLoaded', () => {
+            // 绘制折线图
+            drawLineChartWithZones('lineChart', data, sentimentThresholds, sentimentColors, {
+                showGrid: true,
+                title: 'VIX指数走势与情绪区间',
+                yAxisLabel: '指数值',
+                margin: { top: 40, right: 30, bottom: 50, left: 60 }
+            });
+            
+            // 窗口大小改变时重绘图表
+            window.addEventListener('resize', () => {
+                drawLineChartWithZones('lineChart', data, sentimentThresholds, sentimentColors, {
+                    showGrid: true,
+                    title: 'VIX指数走势与情绪区间',
+                    yAxisLabel: '指数值',
+                    margin: { top: 40, right: 30, bottom: 50, left: 60 }
+                });
+            });
+        });
+    </script>
+</body>
+</html>

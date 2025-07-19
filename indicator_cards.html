@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>美股情绪看板 - 指标卡片</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            padding: 30px;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .header h1 {
+            color: #2c3e50;
+            margin-bottom: 10px;
+            font-size: 2.5em;
+        }
+        .header p {
+            color: #7f8c8d;
+            font-size: 1.1em;
+        }
+        
+        /* 指标卡片网格布局 */
+        .indicators-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr); /* 4列布局 */
+            gap: 20px;
+            margin-top: 30px;
+        }
+        
+        /* 指标卡片样式 */
+        .indicator-card {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            color: #2c3e50;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease;
+            border: 1px solid #dee2e6;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .indicator-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .indicator-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        
+        .indicator-name {
+            font-weight: bold;
+            font-size: 1.1em;
+            color: #34495e;
+        }
+        
+        .indicator-sentiment {
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.8em;
+            font-weight: bold;
+        }
+        
+        .sentiment-optimistic {
+            background-color: rgba(39, 174, 96, 0.2);
+            color: #27ae60;
+        }
+        
+        .sentiment-neutral {
+            background-color: rgba(243, 156, 18, 0.2);
+            color: #f39c12;
+        }
+        
+        .sentiment-pessimistic {
+            background-color: rgba(231, 76, 60, 0.2);
+            color: #e74c3c;
+        }
+        
+        .sentiment-missing {
+            background-color: rgba(189, 195, 199, 0.2);
+            color: #7f8c8d;
+        }
+        
+        .indicator-value {
+            font-size: 1.8em;
+            font-weight: bold;
+            margin: 10px 0;
+            color: #2c3e50;
+        }
+        
+        .mini-chart {
+            height: 50px;
+            background-color: #f1f2f6;
+            border-radius: 5px;
+            margin-top: auto;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        /* 响应式布局 */
+        @media (max-width: 1200px) {
+            .indicators-grid {
+                grid-template-columns: repeat(3, 1fr); /* 3列布局 */
+            }
+        }
+        
+        @media (max-width: 900px) {
+            .indicators-grid {
+                grid-template-columns: repeat(2, 1fr); /* 2列布局 */
+            }
+        }
+        
+        @media (max-width: 600px) {
+            .indicators-grid {
+                grid-template-columns: 1fr; /* 1列布局 */
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📊 美股情绪指标卡片</h1>
+            <p>展示最新交易日的11个关键情绪指标</p>
+        </div>
+        
+        <div class="indicators-grid" id="indicatorsGrid">
+            <!-- 指标卡片将通过JavaScript动态生成 -->
+        </div>
+    </div>
+
+    <script>
+        // 模拟指标数据 - 实际应用中应从JSON文件加载
+        const indicatorsData = [
+            { name: "TRIN 指数 (Arms Index)", value: 1.24, sentiment: "pessimistic", data: [1.24, 1.19, 1.23, 1.03] },
+            { name: "Put/Call Ratio", value: 0.54, sentiment: "optimistic", data: [0.54, 0.56, 0.53, 0.53] },
+
+            { name: "涨跌比 (A/D Ratio)", value: 4.97, sentiment: "optimistic", data: [2.28, 2.44, 0.28, 4.97] },
+            { name: "新高/新低比 (NH/NL)", value: 11.14, sentiment: "optimistic", data: [1.80, 16.5, 3.21, 11.14] },
+            { name: "成交量趋势 (SPY)", value: 1.31, sentiment: "optimistic", data: [1.47, 1.14, 1.04, 1.31] },
+            { name: "SPY 当日净流入金额", value: 4100, sentiment: "optimistic", data: [594.4, 2900, 3300, 4100] },
+            { name: "避险资产流向 (TLT+GLD)", value: null, sentiment: "missing", data: [689.5, 473.2, 138.6, null] },
+            { name: "美元指数 (DXY)", value: 96.762, sentiment: "optimistic", data: [98.01, 97.45, 97.273, 96.762] },
+            { name: "CNN Fear & Greed", value: 63, sentiment: "optimistic", data: [55, 57, 58, 63] },
+            { name: "VIX 指数 (恐慌指数)", value: 16.32, sentiment: "optimistic", data: [19.83, 17.48, 16.76, 16.59, 16.32] }
+        ];
+
+        // 异步加载指标数据的函数（可选）
+        async function loadIndicatorsData() {
+            try {
+                // 实际应用中，这里应该从服务器获取数据
+                // const response = await fetch('indicators_data.json');
+                // if (response.ok) {
+                //     return await response.json();
+                // }
+            } catch (error) {
+                console.log('使用模拟数据:', error.message);
+            }
+            return indicatorsData; // 回退到模拟数据
+        }
+
+        // 格式化数值显示
+        function formatValue(value, name) {
+            if (value === null) return "N/A";
+            
+            // 根据指标名称定制格式化
+            if (name.includes("SPY 当日净流入")) {
+                return `${value > 0 ? '+' : ''}${value.toFixed(1)}M`;
+            } else if (name.includes("涨跌比") || name.includes("成交量趋势") || name.includes("新高/新低比")) {
+                return value.toFixed(2);
+            
+                } else {
+                return value.toString();
+            }
+        }
+
+        // 获取情绪标签文本
+        function getSentimentLabel(sentiment) {
+            switch(sentiment) {
+                case "optimistic": return "乐观";
+                case "neutral": return "中性";
+                case "pessimistic": return "悲观";
+                case "missing": return "缺失";
+                default: return "未知";
+            }
+        }
+
+        // 渲染指标卡片
+        function renderIndicatorCards(indicators) {
+            const gridContainer = document.getElementById('indicatorsGrid');
+            gridContainer.innerHTML = ''; // 清空容器
+            
+            indicators.forEach(indicator => {
+                // 创建卡片元素
+                const card = document.createElement('div');
+                card.className = 'indicator-card';
+                
+                // 卡片头部（指标名称和情绪标签）
+                const header = document.createElement('div');
+                header.className = 'indicator-header';
+                
+                const name = document.createElement('div');
+                name.className = 'indicator-name';
+                name.textContent = indicator.name;
+                
+                const sentiment = document.createElement('div');
+                sentiment.className = `indicator-sentiment sentiment-${indicator.sentiment}`;
+                sentiment.textContent = getSentimentLabel(indicator.sentiment);
+                
+                header.appendChild(name);
+                header.appendChild(sentiment);
+                
+                // 指标数值
+                const value = document.createElement('div');
+                value.className = 'indicator-value';
+                value.textContent = formatValue(indicator.value, indicator.name);
+                
+                // 迷你图表占位符
+                const miniChart = document.createElement('div');
+                miniChart.className = 'mini-chart';
+                miniChart.setAttribute('data-values', JSON.stringify(indicator.data));
+                
+                // 组装卡片
+                card.appendChild(header);
+                card.appendChild(value);
+                card.appendChild(miniChart);
+                
+                // 添加到网格
+                gridContainer.appendChild(card);
+            });
+            
+            // 在实际应用中，这里可以添加代码来绘制迷你图表
+            // drawMiniCharts();
+        }
+
+        // 页面加载完成后初始化
+        document.addEventListener('DOMContentLoaded', async () => {
+            const indicators = await loadIndicatorsData();
+            renderIndicatorCards(indicators);
+        });
+    </script>
+</body>
+</html>

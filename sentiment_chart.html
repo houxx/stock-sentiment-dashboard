@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>美股情绪看板 - 情绪分布趋势</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            padding: 30px;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .header h1 {
+            color: #2c3e50;
+            margin-bottom: 10px;
+            font-size: 2.5em;
+        }
+        .header p {
+            color: #7f8c8d;
+            font-size: 1.1em;
+        }
+        .chart-container {
+            position: relative;
+            height: 500px;
+            margin-bottom: 30px;
+        }
+        .stats-container {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 30px;
+            flex-wrap: wrap;
+        }
+        .stats-description {
+            text-align: center;
+            margin: 20px 0;
+            color: #34495e;
+            font-size: 16px;
+            font-weight: 500;
+        }
+        
+        .stat-card {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            color: #2c3e50;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease;
+            border: 1px solid #dee2e6;
+            min-width: 150px;
+            margin: 10px;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-5px);
+        }
+        .stat-card h3 {
+            margin: 0 0 10px 0;
+            font-size: 2em;
+        }
+        .stat-card p {
+            margin: 0;
+            opacity: 0.9;
+        }
+        .legend {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        .legend-item {
+            display: flex;
+            align-items: center;
+            margin: 0 15px;
+        }
+        .legend-color {
+            width: 20px;
+            height: 20px;
+            border-radius: 3px;
+            margin-right: 8px;
+        }
+        .optimistic { background-color: #27ae60; }
+        .neutral { background-color: #f39c12; }
+        .pessimistic { background-color: #e74c3c; }
+        
+        .positive-change { color: #27ae60; }
+        .negative-change { color: #e74c3c; }
+        .no-change { color: #7f8c8d; }
+        
+        @media (max-width: 768px) {
+            .container {
+                padding: 15px;
+            }
+            .header h1 {
+                font-size: 2em;
+            }
+            .chart-container {
+                height: 400px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📊 美股情绪看板</h1>
+            <p>过去15个交易日情绪指标分布趋势</p>
+        </div>
+        
+        <div class="legend">
+            <div class="legend-item">
+                <div class="legend-color optimistic"></div>
+                <span>乐观指标</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color neutral"></div>
+                <span>中性指标</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color pessimistic"></div>
+                <span>悲观指标</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background-color: #d3d3d3;"></div>
+                <span>缺失数据</span>
+            </div>
+        </div>
+        
+        <div class="chart-container">
+            <canvas id="sentimentChart"></canvas>
+        </div>
+        
+        <div class="stats-description">
+            <p>以下数据显示近5个交易日各类情绪指标的趋势情况</p>
+        </div>
+        <div class="stats-container">
+            <div class="stat-card">
+                <h3 id="optimisticTrend">-</h3>
+                <p>乐观指标趋势</p>
+            </div>
+            <div class="stat-card">
+                <h3 id="neutralTrend">-</h3>
+                <p>中性指标趋势</p>
+            </div>
+            <div class="stat-card">
+                <h3 id="pessimisticTrend">-</h3>
+                <p>悲观指标趋势</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 从外部JSON文件加载数据
+        let sentimentData = null;
+        
+        // 加载sentiment_distribution.json文件
+        fetch('sentiment_distribution.json')
+            .then(response => response.json())
+            .then(data => {
+                sentimentData = data;
+                initializeChart();
+            })
+            .catch(error => {
+                console.error('Error loading sentiment data:', error);
+                // 如果加载失败，使用默认数据
+                sentimentData = {
+                    "overall_sentiment_distribution": [],
+                    "summary": {"total_optimistic": 0, "total_neutral": 0, "total_pessimistic": 0, "total_missing": 0},
+                    "date_range": {"start": "", "end": ""}
+                };
+                initializeChart();
+            });
+
+        // 异步加载JSON数据的函数（可选）
+        async function loadSentimentData() {
+            try {
+                const response = await fetch('sentiment_distribution.json');
+                if (response.ok) {
+                    return await response.json();
+                }
+            } catch (error) {
+                console.log('使用模拟数据:', error.message);
+            }
+            return sentimentData; // 回退到模拟数据
+        }
+
+        // 格式化日期显示
+        function formatDate(dateString) {
+            const date = new Date(dateString);
+            return `${date.getMonth() + 1}/${date.getDate()}`;
+        }
+
+        // 初始化图表
+        async function initChart() {
+            const data = await loadSentimentData();
+            const distribution = data.overall_sentiment_distribution;
+            
+            // 计算近5个交易日的趋势
+            const totalDays = distribution.length;
+            
+            let optimisticTrend = '-', neutralTrend = '-', pessimisticTrend = '-';
+            
+            if (totalDays >= 5) {
+                // 取最近5天的数据
+                const recent5Days = distribution.slice(-5);
+                
+                // 计算每类指标的平均值和趋势
+                const optimisticValues = recent5Days.map(d => d.optimistic);
+                const neutralValues = recent5Days.map(d => d.neutral);
+                const pessimisticValues = recent5Days.map(d => d.pessimistic);
+                
+                // 计算趋势（最后两天的平均值 vs 前三天的平均值）
+                const optimisticEarly = (optimisticValues[0] + optimisticValues[1] + optimisticValues[2]) / 3;
+                const optimisticLate = (optimisticValues[3] + optimisticValues[4]) / 2;
+                const optimisticTrendValue = optimisticLate - optimisticEarly;
+                
+                const neutralEarly = (neutralValues[0] + neutralValues[1] + neutralValues[2]) / 3;
+                const neutralLate = (neutralValues[3] + neutralValues[4]) / 2;
+                const neutralTrendValue = neutralLate - neutralEarly;
+                
+                const pessimisticEarly = (pessimisticValues[0] + pessimisticValues[1] + pessimisticValues[2]) / 3;
+                const pessimisticLate = (pessimisticValues[3] + pessimisticValues[4]) / 2;
+                const pessimisticTrendValue = pessimisticLate - pessimisticEarly;
+                
+                // 格式化趋势显示
+                optimisticTrend = optimisticTrendValue > 0.5 ? '↗️ 上升' : 
+                                 optimisticTrendValue < -0.5 ? '↘️ 下降' : '→ 平稳';
+                neutralTrend = neutralTrendValue > 0.5 ? '↗️ 上升' : 
+                              neutralTrendValue < -0.5 ? '↘️ 下降' : '→ 平稳';
+                pessimisticTrend = pessimisticTrendValue > 0.5 ? '↗️ 上升' : 
+                                  pessimisticTrendValue < -0.5 ? '↘️ 下降' : '→ 平稳';
+                
+                // 设置颜色样式
+                const setTrendStyle = (elementId, trendValue, trendText) => {
+                    const element = document.getElementById(elementId);
+                    element.textContent = trendText;
+                    element.className = '';
+                    if (trendValue > 0.5) {
+                        element.classList.add('positive-change');
+                    } else if (trendValue < -0.5) {
+                        element.classList.add('negative-change');
+                    } else {
+                        element.classList.add('no-change');
+                    }
+                };
+                
+                setTrendStyle('optimisticTrend', optimisticTrendValue, optimisticTrend);
+                setTrendStyle('neutralTrend', neutralTrendValue, neutralTrend);
+                setTrendStyle('pessimisticTrend', pessimisticTrendValue, pessimisticTrend);
+            } else {
+                // 如果数据不足5天，显示默认值
+                document.getElementById('optimisticTrend').textContent = '数据不足';
+                document.getElementById('neutralTrend').textContent = '数据不足';
+                document.getElementById('pessimisticTrend').textContent = '数据不足';
+            }
+            
+            // 准备图表数据
+            const labels = distribution.map(item => formatDate(item.date));
+            const optimisticData = distribution.map(item => item.optimistic);
+            const neutralData = distribution.map(item => item.neutral);
+            const pessimisticData = distribution.map(item => item.pessimistic);
+            const missingData = distribution.map(item => item.missing || 0);
+            
+            // 创建图表
+            const ctx = document.getElementById('sentimentChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        {
+                            label: '乐观指标',
+                            data: optimisticData,
+                            backgroundColor: '#27ae60',
+                            borderColor: '#229954',
+                            borderWidth: 1
+                        },
+                        {
+                            label: '中性指标',
+                            data: neutralData,
+                            backgroundColor: '#f39c12',
+                            borderColor: '#e67e22',
+                            borderWidth: 1
+                        },
+                        {
+                            label: '悲观指标',
+                            data: pessimisticData,
+                            backgroundColor: '#e74c3c',
+                            borderColor: '#c0392b',
+                            borderWidth: 1
+                        },
+                        {
+                            label: '缺失数据',
+                            data: missingData,
+                            backgroundColor: '#d3d3d3',
+                            borderColor: '#bbb',
+                            borderWidth: 1
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: '美股情绪指标分布趋势',
+                            font: {
+                                size: 18,
+                                weight: 'bold'
+                            },
+                            padding: 20
+                        },
+                        legend: {
+                            display: false // 使用自定义图例
+                        },
+                        tooltip: {
+                            mode: 'index',
+                            intersect: false,
+                            callbacks: {
+                                title: function(context) {
+                                    const index = context[0].dataIndex;
+                                    return distribution[index].date;
+                                },
+                                footer: function(context) {
+                                    const index = context[0].dataIndex;
+                                    return `总计: ${distribution[index].total} 个指标`;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            stacked: true,
+                            title: {
+                                display: true,
+                                text: '交易日期',
+                                font: {
+                                    size: 14,
+                                    weight: 'bold'
+                                }
+                            },
+                            grid: {
+                                display: false
+                            }
+                        },
+                        y: {
+                            stacked: true,
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: '指标数量',
+                                font: {
+                                    size: 14,
+                                    weight: 'bold'
+                                }
+                            },
+                            ticks: {
+                                stepSize: 1
+                            }
+                        }
+                    },
+                    interaction: {
+                        mode: 'index',
+                        intersect: false
+                    },
+                    animation: {
+                        duration: 1000,
+                        easing: 'easeInOutQuart'
+                    }
+                }
+            });
+        }
+
+        // 页面加载完成后初始化图表
+        document.addEventListener('DOMContentLoaded', initChart);
+    </script>
+</body>
+</html>

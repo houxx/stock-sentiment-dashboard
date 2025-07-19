@@ -1,0 +1,148 @@
+{
+  "overall_sentiment_distribution": [
+    {
+      "date": "2025-06-23",
+      "optimistic": 7,
+      "neutral": 3,
+      "pessimistic": 1,
+      "missing": 0,
+      "total": 11
+    },
+    {
+      "date": "2025-06-24",
+      "optimistic": 8,
+      "neutral": 3,
+      "pessimistic": 0,
+      "missing": 0,
+      "total": 11
+    },
+    {
+      "date": "2025-06-25",
+      "optimistic": 6,
+      "neutral": 3,
+      "pessimistic": 2,
+      "missing": 0,
+      "total": 11
+    },
+    {
+      "date": "2025-06-26",
+      "optimistic": 9,
+      "neutral": 1,
+      "pessimistic": 0,
+      "missing": 1,
+      "total": 11
+    },
+    {
+      "date": "2025-06-27",
+      "optimistic": 7,
+      "neutral": 3,
+      "pessimistic": 1,
+      "missing": 0,
+      "total": 11
+    },
+    {
+      "date": "2025-06-30",
+      "optimistic": 6,
+      "neutral": 5,
+      "pessimistic": 0,
+      "missing": 0,
+      "total": 11
+    },
+    {
+      "date": "2025-07-01",
+      "optimistic": 6,
+      "neutral": 3,
+      "pessimistic": 2,
+      "missing": 0,
+      "total": 11
+    },
+    {
+      "date": "2025-07-02",
+      "optimistic": 7,
+      "neutral": 4,
+      "pessimistic": 0,
+      "missing": 0,
+      "total": 11
+    },
+    {
+      "date": "2025-07-03",
+      "optimistic": 6,
+      "neutral": 2,
+      "pessimistic": 2,
+      "missing": 1,
+      "total": 11
+    },
+    {
+      "date": "2025-07-07",
+      "optimistic": 6,
+      "neutral": 3,
+      "pessimistic": 1,
+      "missing": 1,
+      "total": 11
+    },
+    {
+      "date": "2025-07-08",
+      "optimistic": 6,
+      "neutral": 4,
+      "pessimistic": 1,
+      "missing": 0,
+      "total": 11
+    },
+    {
+      "date": "2025-07-09",
+      "optimistic": 4,
+      "neutral": 6,
+      "pessimistic": 1,
+      "missing": 0,
+      "total": 11
+    },
+    {
+      "date": "2025-07-10",
+      "optimistic": 7,
+      "neutral": 3,
+      "pessimistic": 1,
+      "missing": 0,
+      "total": 11
+    },
+    {
+      "date": "2025-07-11",
+      "optimistic": 5,
+      "neutral": 4,
+      "pessimistic": 2,
+      "missing": 0,
+      "total": 11
+    },
+    {
+      "date": "2025-07-14",
+      "optimistic": 6,
+      "neutral": 3,
+      "pessimistic": 0,
+      "missing": 2,
+      "total": 11
+    },
+    {
+      "date": "2025-07-15",
+      "optimistic": 5,
+      "neutral": 3,
+      "pessimistic": 2,
+      "missing": 1,
+      "total": 11
+    },
+    {
+      "date": "2025-07-16",
+      "optimistic": 6,
+      "neutral": 4,
+      "pessimistic": 0,
+      "missing": 1,
+      "total": 11
+    },
+    {
+      "date": "2025-07-17",
+      "optimistic": 5,
+      "neutral": 4,
+      "pessimistic": 0,
+      "missing": 2,
+      "total": 11
+    }
+  ]
+}

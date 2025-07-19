@@ -626,43 +626,52 @@
 
         // 计算情绪趋势
         function calculateTrend(data, sentimentType, recentDays = 5) {
-            if (!data || data.length < recentDays) return 'neutral';
+            if (!data || data.length < 2) return { trend: 'neutral', change: 0, description: '数据不足' };
             
-            const recentData = data.slice(-recentDays);
-            const oldData = data.slice(-recentDays * 2, -recentDays);
+            // 获取最新值和5天前的值进行比较
+            const latestValue = data[data.length - 1][sentimentType];
+            const compareIndex = Math.max(0, data.length - recentDays - 1);
+            const compareValue = data[compareIndex][sentimentType];
             
-            if (oldData.length === 0) return 'neutral';
+            const change = latestValue - compareValue;
+            const days = Math.min(recentDays, data.length - 1);
             
-            const recentAvg = recentData.reduce((sum, item) => sum + item[sentimentType], 0) / recentData.length;
-            const oldAvg = oldData.reduce((sum, item) => sum + item[sentimentType], 0) / oldData.length;
+            let trend = 'neutral';
+            let description = '';
             
-            const change = recentAvg - oldAvg;
-            const percentChange = (change / oldAvg) * 100;
+            if (change > 0) {
+                trend = 'up';
+                description = `近${days}日 +${change}`;
+            } else if (change < 0) {
+                trend = 'down';
+                description = `近${days}日 ${change}`;
+            } else {
+                trend = 'neutral';
+                description = `近${days}日 无变化`;
+            }
             
-            if (percentChange > 10) return 'up';
-            if (percentChange < -10) return 'down';
-            return 'neutral';
+            return { trend, change, description };
         }
 
         // 更新趋势显示
-        function updateTrendDisplay(elementId, trend, value) {
+        function updateTrendDisplay(elementId, trendData) {
             const element = document.getElementById(elementId);
             if (!element) return;
             
-            let trendText = '趋势: ';
+            let trendText = '';
             let trendClass = '';
             
-            switch (trend) {
+            switch (trendData.trend) {
                 case 'up':
-                    trendText += '上升 ↑';
+                    trendText = `${trendData.description} ↑`;
                     trendClass = 'trend-up';
                     break;
                 case 'down':
-                    trendText += '下降 ↓';
+                    trendText = `${trendData.description} ↓`;
                     trendClass = 'trend-down';
                     break;
                 default:
-                    trendText += '持平 →';
+                    trendText = `${trendData.description} →`;
                     trendClass = 'trend-neutral';
             }
             

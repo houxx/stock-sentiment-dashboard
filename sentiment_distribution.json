@@ -138,10 +138,18 @@
     },
     {
       "date": "2025-07-17",
-      "optimistic": 5,
+      "optimistic": 6,
+      "neutral": 5,
+      "pessimistic": 0,
+      "missing": 0,
+      "total": 11
+    },
+    {
+      "date": "2025-07-18",
+      "optimistic": 4,
       "neutral": 4,
       "pessimistic": 0,
-      "missing": 2,
+      "missing": 3,
       "total": 11
     }
   ]

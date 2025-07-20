@@ -275,34 +275,18 @@
             border-top: 1px solid #eee;
         }
         
-        /* 分类标题样式 */
-        .category-title {
-            margin: 30px 0 20px 0;
-            padding: 15px 20px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            border-radius: 10px;
-            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+        /* 分类子标题样式 */
+        .category-subtitle {
+            font-size: 1.2em;
+            color: #2c3e50;
+            margin: 30px 0 15px 0;
+            padding-bottom: 8px;
+            border-bottom: 1px solid #eee;
+            grid-column: 1 / -1; /* 占据整行 */
         }
         
-        .category-title h2 {
-            margin: 0;
-            color: white;
-            font-size: 1.3em;
-            font-weight: 600;
-            text-align: center;
-            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
-        }
-        
-        .category-title:first-child {
+        .category-subtitle:first-child {
             margin-top: 0;
-        }
-        
-        /* 分类指标容器样式 */
-        .category-indicators {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 20px;
-            margin-bottom: 30px;
         }
 
         /* 响应式布局 */
@@ -310,10 +294,6 @@
         @media (max-width: 960px) { /* 调整断点，适配两列布局 */
             .indicators-grid {
                 grid-template-columns: 1fr; /* 小屏幕上变为单列 */
-            }
-            
-            .category-indicators {
-                grid-template-columns: 1fr; /* 小屏幕上分类指标也变为单列 */
             }
             
             .stats-cards {
@@ -326,18 +306,9 @@
         }
         
         @media (max-width: 600px) {
-            .category-title {
-                margin: 20px 0 15px 0;
-                padding: 12px 15px;
-            }
-            
-            .category-title h2 {
+            .category-subtitle {
+                margin: 20px 0 10px 0;
                 font-size: 1.1em;
-            }
-            
-            .category-indicators {
-                grid-template-columns: 1fr;
-                gap: 15px;
             }
         }
     </style>
@@ -1439,15 +1410,12 @@
                 if (!categoryIndicators || categoryIndicators.length === 0) return;
                 
                 // 创建分类标题
-                const categoryTitle = document.createElement('div');
-                categoryTitle.className = 'category-title';
-                categoryTitle.innerHTML = `<h2>${indicatorCategories[categoryKey].title}</h2>`;
+                const categoryTitle = document.createElement('h3');
+                categoryTitle.className = 'category-subtitle';
+                categoryTitle.textContent = indicatorCategories[categoryKey].title;
                 gridContainer.appendChild(categoryTitle);
                 
-                // 创建该分类的指标容器
-                const categoryContainer = document.createElement('div');
-                categoryContainer.className = 'category-indicators';
-                
+                // 直接将指标卡片添加到主容器
                 categoryIndicators.forEach((indicator, index) => {
                 const card = document.createElement('div');
                 card.className = `indicator-card ${indicator.sentiment}`;
@@ -1543,10 +1511,8 @@
                     card.appendChild(thresholdExplanation);
                 }
                 
-                categoryContainer.appendChild(card);
+                gridContainer.appendChild(card);
                 });
-                
-                gridContainer.appendChild(categoryContainer);
             });
         }
         

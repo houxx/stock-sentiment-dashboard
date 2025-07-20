@@ -44,13 +44,21 @@ def generate_sentiment_json():
             }
             
             for _, row in day_data.iterrows():
-                judgment = str(row['判断结果']).strip().lower()
+                judgment = str(row['判断结果']).strip()
                 
-                if judgment in ['乐观', 'optimistic']:
+                # 处理带括号说明的判断结果，提取主要判断
+                if '(' in judgment:
+                    main_judgment = judgment.split('(')[0].strip()
+                else:
+                    main_judgment = judgment
+                
+                main_judgment_lower = main_judgment.lower()
+                
+                if main_judgment in ['乐观'] or main_judgment_lower in ['optimistic']:
                     sentiment_counts['optimistic'] += 1
-                elif judgment in ['中性', 'neutral']:
+                elif main_judgment in ['中性'] or main_judgment_lower in ['neutral']:
                     sentiment_counts['neutral'] += 1
-                elif judgment in ['悲观', 'pessimistic', '警示']:
+                elif main_judgment in ['悲观', '警示'] or main_judgment_lower in ['pessimistic']:
                     sentiment_counts['pessimistic'] += 1
                 else:
                     sentiment_counts['missing'] += 1

@@ -274,6 +274,36 @@
             padding: 10px 5px 5px 5px;
             border-top: 1px solid #eee;
         }
+        
+        /* 分类标题样式 */
+        .category-title {
+            margin: 30px 0 20px 0;
+            padding: 15px 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+        }
+        
+        .category-title h2 {
+            margin: 0;
+            color: white;
+            font-size: 1.3em;
+            font-weight: 600;
+            text-align: center;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .category-title:first-child {
+            margin-top: 0;
+        }
+        
+        /* 分类指标容器样式 */
+        .category-indicators {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
 
         /* 响应式布局 */
         /* 媒体查询，在小屏幕上依然保持单列 */
@@ -282,12 +312,32 @@
                 grid-template-columns: 1fr; /* 小屏幕上变为单列 */
             }
             
+            .category-indicators {
+                grid-template-columns: 1fr; /* 小屏幕上分类指标也变为单列 */
+            }
+            
             .stats-cards {
                 flex-direction: column;
             }
 
             .stat-card {
                 width: 100%;
+            }
+        }
+        
+        @media (max-width: 600px) {
+            .category-title {
+                margin: 20px 0 15px 0;
+                padding: 12px 15px;
+            }
+            
+            .category-title h2 {
+                font-size: 1.1em;
+            }
+            
+            .category-indicators {
+                grid-template-columns: 1fr;
+                gap: 15px;
             }
         }
     </style>
@@ -1335,12 +1385,70 @@
             return drawMiniChart(canvasElement, indicatorData);
         }
 
+        // 指标分类定义
+        const indicatorCategories = {
+            '市场广度指标': {
+                title: '市场广度指标 (上涨是否"健康")',
+                indicators: ['涨跌比 (A/D Ratio)', '新高/新低比 (NH/NL Ratio)', 'TRIN 指数 (Arms Index)']
+            },
+            '情绪量化指标': {
+                title: '情绪量化指标 (情绪是否"恐慌"或"贪婪")',
+                indicators: ['VIX 指数', 'Put/Call Ratio', 'CNN Fear & Greed Index', 'VIX 指数 (恐慌指数)', 'CNN Fear & Greed']
+            },
+            '资金流向与动能指标': {
+                title: '资金流向与动能指标 (资金的动向与交易活跃度)',
+                indicators: ['成交量趋势 (SPY)', 'SPY 当日净流入金额', '避险资产流向 (TLT+GLD)']
+            },
+            '其它': {
+                title: '其它指标',
+                indicators: []
+            }
+        };
+
+        // 根据指标名称获取分类
+        function getIndicatorCategory(indicatorName) {
+            for (const [category, config] of Object.entries(indicatorCategories)) {
+                if (category === '其它') continue;
+                if (config.indicators.some(name => indicatorName.includes(name.split(' ')[0]) || name.includes(indicatorName.split(' ')[0]))) {
+                    return category;
+                }
+            }
+            return '其它';
+        }
+
         // 渲染指标卡片
         function renderIndicatorCards(indicators) {
             const gridContainer = document.getElementById('indicatorsGrid');
             gridContainer.innerHTML = '';
             
-            indicators.forEach((indicator, index) => {
+            // 按分类组织指标
+            const categorizedIndicators = {};
+            indicators.forEach(indicator => {
+                const category = getIndicatorCategory(indicator.name);
+                if (!categorizedIndicators[category]) {
+                    categorizedIndicators[category] = [];
+                }
+                categorizedIndicators[category].push(indicator);
+            });
+            
+            // 按预定义顺序渲染各分类
+            const categoryOrder = ['市场广度指标', '情绪量化指标', '资金流向与动能指标', '其它'];
+            
+            categoryOrder.forEach(categoryKey => {
+                const categoryIndicators = categorizedIndicators[categoryKey];
+                if (!categoryIndicators || categoryIndicators.length === 0) return;
+                
+                // 创建分类标题
+                const categoryTitle = document.createElement('div');
+                categoryTitle.className = 'category-title';
+                categoryTitle.innerHTML = `<h2>${indicatorCategories[categoryKey].title}</h2>`;
+                gridContainer.appendChild(categoryTitle);
+                
+                // 创建该分类的指标容器
+                const categoryContainer = document.createElement('div');
+                categoryContainer.className = 'category-indicators';
+                
+                categoryIndicators.forEach((indicator, index) => {
                 const card = document.createElement('div');
                 card.className = `indicator-card ${indicator.sentiment}`;
                 
@@ -1435,7 +1543,10 @@
                     card.appendChild(thresholdExplanation);
                 }
                 
-                gridContainer.appendChild(card);
+                categoryContainer.appendChild(card);
+                });
+                
+                gridContainer.appendChild(categoryContainer);
             });
         }
         

@@ -151,6 +151,14 @@
       "pessimistic": 0,
       "missing": 3,
       "total": 11
+    },
+    {
+      "date": "日期",
+      "optimistic": 0,
+      "neutral": 0,
+      "pessimistic": 0,
+      "missing": 1,
+      "total": 1
     }
   ]
 }

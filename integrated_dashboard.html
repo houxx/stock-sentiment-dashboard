@@ -5,6 +5,24 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>美股情绪看板 - 综合仪表盘</title>
     <link rel="stylesheet" href="chart.min.css">
+    
+    <!-- Google Analytics 4 -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'G-XXXXXXXXXX');
+    </script>
+    
+    <!-- Microsoft Clarity -->
+    <script type="text/javascript">
+        (function(c,l,a,r,i,t,y){
+            c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
+            t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
+            y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
+        })(window, document, "clarity", "script", "XXXXXXXXXX");
+    </script>
     <style>
         :root {
             --optimistic-color: rgba(39, 174, 96, 0.7);
@@ -1865,6 +1883,103 @@
             // 创建图表
             ctx.chart = new Chart(ctx, chartConfig);
         }
+        
+        // 添加事件跟踪
+        function trackEvent(eventName, parameters = {}) {
+            // Google Analytics 事件跟踪
+            if (typeof gtag !== 'undefined') {
+                gtag('event', eventName, parameters);
+            }
+            
+            // Microsoft Clarity 自定义事件
+            if (typeof clarity !== 'undefined') {
+                clarity('set', eventName, JSON.stringify(parameters));
+            }
+        }
+        
+        // 页面加载完成后添加事件监听
+        document.addEventListener('DOMContentLoaded', function() {
+            // 跟踪页面加载
+            trackEvent('page_view', {
+                'page_title': document.title,
+                'page_location': window.location.href
+            });
+            
+            // 跟踪指标卡片点击
+            document.addEventListener('click', function(e) {
+                const card = e.target.closest('.indicator-card');
+                if (card) {
+                    const title = card.querySelector('h3')?.textContent || '未知指标';
+                    const value = card.querySelector('.value')?.textContent || '未知值';
+                    
+                    trackEvent('indicator_card_click', {
+                        'indicator_name': title,
+                        'indicator_value': value,
+                        'card_position': Array.from(card.parentNode.children).indexOf(card) + 1
+                    });
+                }
+                
+                // 跟踪图表区域点击
+                const chartContainer = e.target.closest('.chart-container');
+                if (chartContainer) {
+                    trackEvent('chart_interaction', {
+                        'chart_type': 'sentiment_chart',
+                        'interaction_type': 'click'
+                    });
+                }
+            });
+            
+            // 跟踪页面停留时间
+            let startTime = Date.now();
+            let isActive = true;
+            
+            // 页面失去焦点时记录停留时间
+            document.addEventListener('visibilitychange', function() {
+                if (document.hidden && isActive) {
+                    const timeSpent = Math.round((Date.now() - startTime) / 1000);
+                    trackEvent('page_engagement', {
+                        'engagement_time_msec': timeSpent * 1000,
+                        'page_title': document.title
+                    });
+                    isActive = false;
+                } else if (!document.hidden && !isActive) {
+                    startTime = Date.now();
+                    isActive = true;
+                }
+            });
+            
+            // 页面卸载时记录总停留时间
+            window.addEventListener('beforeunload', function() {
+                if (isActive) {
+                    const timeSpent = Math.round((Date.now() - startTime) / 1000);
+                    trackEvent('page_engagement', {
+                        'engagement_time_msec': timeSpent * 1000,
+                        'page_title': document.title,
+                        'event_type': 'page_unload'
+                    });
+                }
+            });
+            
+            // 跟踪滚动深度
+            let maxScrollDepth = 0;
+            window.addEventListener('scroll', function() {
+                const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+                const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+                const scrollPercent = Math.round((scrollTop / docHeight) * 100);
+                
+                if (scrollPercent > maxScrollDepth) {
+                    maxScrollDepth = scrollPercent;
+                    
+                    // 每25%记录一次滚动深度
+                    if (scrollPercent >= 25 && scrollPercent % 25 === 0) {
+                        trackEvent('scroll_depth', {
+                            'scroll_depth_percent': scrollPercent,
+                            'page_title': document.title
+                        });
+                    }
+                }
+            });
+        });
     </script>
 </body>
 </html>

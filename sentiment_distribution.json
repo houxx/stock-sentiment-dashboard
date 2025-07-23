@@ -116,8 +116,8 @@
       "date": "2025-07-14",
       "optimistic": 6,
       "neutral": 3,
-      "pessimistic": 0,
-      "missing": 2,
+      "pessimistic": 1,
+      "missing": 1,
       "total": 11
     },
     {
@@ -148,16 +148,16 @@
       "date": "2025-07-18",
       "optimistic": 5,
       "neutral": 5,
-      "pessimistic": 0,
-      "missing": 1,
+      "pessimistic": 1,
+      "missing": 0,
       "total": 11
     },
     {
       "date": "2025-07-21",
       "optimistic": 5,
       "neutral": 5,
-      "pessimistic": 0,
-      "missing": 1,
+      "pessimistic": 1,
+      "missing": 0,
       "total": 11
     },
     {
@@ -167,14 +167,6 @@
       "pessimistic": 0,
       "missing": 2,
       "total": 11
-    },
-    {
-      "date": "日期",
-      "optimistic": 0,
-      "neutral": 0,
-      "pessimistic": 0,
-      "missing": 1,
-      "total": 1
     }
   ]
 }

@@ -36,8 +36,10 @@ def generate_sentiment_json():
             if date == '日期':
                 continue
                 
-            # 过滤当天的数据，排除板块ETF流向
-            day_data = df[(df['日期'] == date) & (df['指标名称'] != '板块ETF流向')]
+            # 过滤当天的数据，排除板块ETF流向和表头行
+            day_data = df[(df['日期'] == date) & 
+                         (df['指标名称'] != '板块ETF流向') & 
+                         (df['指标名称'] != '指标名称')]
             
             # 统计各种情绪的数量
             sentiment_counts = {

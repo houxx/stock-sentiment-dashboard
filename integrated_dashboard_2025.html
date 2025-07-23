@@ -195,6 +195,11 @@
             color: #e74c3c;
         }
 
+        .status-missing {
+            background-color: #f8f9fa;
+            color: #6c757d;
+        }
+
         .indicator-explanation {
             font-size: 0.9em;
             margin-top: 10px;
@@ -721,15 +726,18 @@
             let statusClass = '';
             let statusText = '';
             
-            if (indicator.sentiment === '乐观' || indicator.sentiment === 'optimistic') {
+            if (indicator.sentiment && (indicator.sentiment.includes('乐观') || indicator.sentiment === 'optimistic')) {
                 statusClass = 'status-optimistic';
                 statusText = '乐观';
-            } else if (indicator.sentiment === '中性' || indicator.sentiment === 'neutral') {
+            } else if (indicator.sentiment && (indicator.sentiment.includes('中性') || indicator.sentiment === 'neutral')) {
                 statusClass = 'status-neutral';
                 statusText = '中性';
-            } else if (indicator.sentiment === '悲观' || indicator.sentiment === 'pessimistic') {
+            } else if (indicator.sentiment && (indicator.sentiment.includes('悲观') || indicator.sentiment === 'pessimistic')) {
                 statusClass = 'status-pessimistic';
                 statusText = '悲观';
+            } else {
+                statusClass = 'status-missing';
+                statusText = '缺失';
             }
             
             // 构建卡片内容

@@ -188,7 +188,7 @@ git push origin main
 # 给脚本执行权限（首次使用）
 chmod +x update_and_deploy.sh
 
-# 运行自动更新脚本
+# c
 ./update_and_deploy.sh
 ```
 

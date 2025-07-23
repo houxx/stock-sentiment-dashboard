@@ -51,9 +51,6 @@ def generate_sentiment_json():
             
             for _, row in day_data.iterrows():
                 judgment = str(row['判断结果']).strip()
-                indicator_name = str(row['指标名称']).strip()
-                
-
                 
                 # 处理带括号说明的判断结果，提取主要判断
                 if '(' in judgment:
@@ -66,23 +63,18 @@ def generate_sentiment_json():
                 # 检查是否包含乐观相关词汇
                 if (main_judgment in ['乐观'] or main_judgment_lower in ['optimistic'] or 
                     '乐观' in judgment or 'optimistic' in judgment.lower()):
-
                     sentiment_counts['optimistic'] += 1
                 elif (main_judgment in ['中性'] or main_judgment_lower in ['neutral'] or
                       '中性' in judgment or 'neutral' in judgment.lower()):
-
                     sentiment_counts['neutral'] += 1
                 elif (main_judgment in ['悲观', '警示'] or main_judgment_lower in ['pessimistic'] or
                       '悲观' in judgment or 'pessimistic' in judgment.lower() or '警示' in judgment):
-
                     sentiment_counts['pessimistic'] += 1
                 elif judgment in ['N/A', '', 'nan'] or pd.isna(row['判断结果']):
-
                     sentiment_counts['missing'] += 1
                 else:
                     # 如果都不匹配，打印出来以便调试
-                    print(f"未识别的判断结果: '{judgment}' (指标: {indicator_name}) 日期: {date}")
-
+                    print(f"未识别的判断结果: '{judgment}' (指标: {row['指标名称']}) 日期: {date}")
                     sentiment_counts['missing'] += 1
             
             # 计算总数

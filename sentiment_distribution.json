@@ -164,7 +164,15 @@
       "date": "2025-07-22",
       "optimistic": 6,
       "neutral": 3,
-      "pessimistic": 0,
+      "pessimistic": 2,
+      "missing": 0,
+      "total": 11
+    },
+    {
+      "date": "2025-07-23",
+      "optimistic": 7,
+      "neutral": 1,
+      "pessimistic": 1,
       "missing": 2,
       "total": 11
     }

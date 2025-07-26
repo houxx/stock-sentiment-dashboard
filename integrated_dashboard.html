@@ -1695,9 +1695,9 @@
                                 ma20Values.push(parseFloat(ma20Match[1]));
                                 ma50Values.push(parseFloat(ma50Match[1]));
                             } else {
-                                // 如果无法提取MA值，使用价格作为近似值（这样至少图表能显示）
-                                ma20Values.push(price * 0.99); // MA20通常略低于当前价格
-                                ma50Values.push(price * 0.96); // MA50通常更低
+                                // 如果无法提取MA值，使用null值（不显示该点）
+                                ma20Values.push(null);
+                                ma50Values.push(null);
                             }
                         }
                     }
@@ -1705,7 +1705,7 @@
             });
             
             // 计算Y轴范围
-            const allValues = [...sp500Values, ...ma20Values, ...ma50Values].filter(v => !isNaN(v));
+            const allValues = [...sp500Values, ...ma20Values, ...ma50Values].filter(v => v !== null && !isNaN(v));
             const minY = Math.min(...allValues);
             const maxY = Math.max(...allValues);
             const yRange = maxY - minY;
@@ -1772,7 +1772,8 @@
                             pointBackgroundColor: '#3498db',
                             pointBorderColor: 'white',
                             pointBorderWidth: 1,
-                            borderDash: [5, 5]
+                            borderDash: [5, 5],
+                            spanGaps: false
                         },
                         {
                             label: 'MA50',
@@ -1785,7 +1786,8 @@
                             pointBackgroundColor: '#e67e22',
                             pointBorderColor: 'white',
                             pointBorderWidth: 1,
-                            borderDash: [10, 5]
+                            borderDash: [10, 5],
+                            spanGaps: false
                         }
                     ]
                 },

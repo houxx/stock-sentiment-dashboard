@@ -155,8 +155,8 @@
     {
       "date": "2025-07-21",
       "optimistic": 5,
-      "neutral": 5,
-      "pessimistic": 1,
+      "neutral": 4,
+      "pessimistic": 2,
       "missing": 0,
       "total": 11
     },
@@ -171,17 +171,17 @@
     {
       "date": "2025-07-23",
       "optimistic": 7,
-      "neutral": 2,
+      "neutral": 3,
       "pessimistic": 1,
-      "missing": 1,
+      "missing": 0,
       "total": 11
     },
     {
       "date": "2025-07-24",
       "optimistic": 5,
       "neutral": 2,
-      "pessimistic": 2,
-      "missing": 2,
+      "pessimistic": 3,
+      "missing": 1,
       "total": 11
     },
     {

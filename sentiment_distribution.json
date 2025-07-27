@@ -179,17 +179,17 @@
     {
       "date": "2025-07-24",
       "optimistic": 5,
-      "neutral": 2,
+      "neutral": 3,
       "pessimistic": 3,
-      "missing": 1,
+      "missing": 0,
       "total": 11
     },
     {
       "date": "2025-07-25",
-      "optimistic": 3,
-      "neutral": 6,
+      "optimistic": 4,
+      "neutral": 7,
       "pessimistic": 0,
-      "missing": 2,
+      "missing": 0,
       "total": 11
     }
   ]

@@ -190,7 +190,7 @@ chmod +x update_and_deploy.sh
 
 # c
 ./update_and_deploy.sh
-```
+
 
 **执行流程**：
 1. 🔍 检查数据文件是否存在

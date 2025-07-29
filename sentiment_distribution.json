@@ -186,10 +186,10 @@
     },
     {
       "date": "2025-07-25",
-      "optimistic": 4,
+      "optimistic": 3,
       "neutral": 6,
       "pessimistic": 0,
-      "missing": 1,
+      "missing": 2,
       "total": 11
     },
     {

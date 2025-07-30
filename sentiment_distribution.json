@@ -195,6 +195,14 @@
     {
       "date": "2025-07-28",
       "optimistic": 4,
+      "neutral": 4,
+      "pessimistic": 3,
+      "missing": 0,
+      "total": 11
+    },
+    {
+      "date": "2025-07-29",
+      "optimistic": 4,
       "neutral": 3,
       "pessimistic": 2,
       "missing": 2,

@@ -210,10 +210,18 @@
     },
     {
       "date": "2025-07-30",
-      "optimistic": 4,
-      "neutral": 2,
+      "optimistic": 5,
+      "neutral": 3,
       "pessimistic": 3,
-      "missing": 2,
+      "missing": 0,
+      "total": 11
+    },
+    {
+      "date": "2025-07-31",
+      "optimistic": 2,
+      "neutral": 3,
+      "pessimistic": 3,
+      "missing": 3,
       "total": 11
     }
   ]

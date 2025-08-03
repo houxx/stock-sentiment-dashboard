@@ -219,9 +219,17 @@
     {
       "date": "2025-07-31",
       "optimistic": 2,
-      "neutral": 3,
+      "neutral": 4,
+      "pessimistic": 4,
+      "missing": 1,
+      "total": 11
+    },
+    {
+      "date": "2025-08-01",
+      "optimistic": 3,
+      "neutral": 5,
       "pessimistic": 3,
-      "missing": 3,
+      "missing": 0,
       "total": 11
     }
   ]
